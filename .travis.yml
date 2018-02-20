@@ -1,0 +1,20 @@
+language: python
+python:
+  - "2.7"
+
+sudo: required
+
+env:
+  - OS_TYPE=centos OS_VERSION=7
+
+before_script:
+  # Uncomment next line if your Django app needs a JS runtime:
+  - yum install -y epel-release
+  - yum install -y clang
+  - yum install -y llvm
+  - python -V                                   # Print out python version for debugging
+  - pip install -r requirements.txt
+
+script:
+  - coverage run ...
+  - coverage report -m
