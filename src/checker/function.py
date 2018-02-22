@@ -3,39 +3,71 @@ import re
 from clang.cindex import CursorKind
 
 
-
 class Function(object):
-    def __init__(self, root):
-        self.nestedCount = 0
-        self.maximumNestedCount = 0
-        self.lineCount = 0
-
-        self.check_list = {'namingRule': list(), 'varName': list(), 'doWhile': list(), 'goto': list()}
-        self.variable_dict = dict()    # element: 'value name': {'declare': declare line, 'first': first using line, 'last': last using line}
-
+    def __init__(self):
         self.underscore = re.compile('[_a-z]+')
         self.camelcase = re.compile('[a-z]+([A-Z][a-z]+)*')
 
+        self.line_count = 0
+        self.nested_count = 0
+        self.maximum_nested_count = 0
+        self.check_list = {'do/while': list(), 'goto': list()}
+
+        self.variable = dict()    # element: 'value name': {'declare': declare line, 'first': first using line, 'last': last using line}
+
+        self.root = None
+        self.global_variable = None
+        self.function_name = None
+
+
+    def set_init_data(self, root, function_name, global_variable):
         self.root = root
+        self.global_variable = global_variable
+        self.function_name = function_name
+
+        self.line_count = 0
+        self.nested_count = 0
+        self.maximum_nested_count = 0
+        self.check_list = {'do/while': list(), 'goto': list()}
+
+        self.variable = dict()
 
 
     def check_naming_rule(self):
-        underscore = [1 if self.underscore.match(variable) else 0 for variable in self.variable_dict]
-        camelcase = [1 if self.camelcase.match(variable) else 0 for variable in self.variable_dict]
+        result = list()
 
-        return True if sum(underscore) == len(self.variable_dict) or sum(camelcase) == len(self.variable_dict) else False
+        for variable in self.variable:
+            if self.underscore.match(variable) is None:
+                result.append(False)
+                break
+        else:
+            result.append(True)
+
+        for variable in self.variable:
+            if self.camelcase.match(variable) is None:
+                result.append(False)
+                break
+        else:
+            result.append(True)
+
+        return result   # [result of underscore rule, result of camelcase rule] - True: pass, False: non-pass
+
 
     def check_unusing_variable(self):
-        for key in self.variable_dict:
-            if not self.variable_dict[key]['first']:
-                return False
+        result = list()
 
-        return True
+        for key in self.variable:
+            if not self.variable[key]['first']:
+                result.append(self.variable[key]['declare'])
+
+        return result
 
     def check_function(self):
         self.walk(self.root)
 
-        return self.check_naming_rule(), self.check_unusing_variable()
+        return {'variable': self.variable, 'naming_rule': self.check_naming_rule(),
+                'unused_variable': self.check_unusing_variable(), 'nested_count': self.maximum_nested_count,
+                'do/while': self.check_list['do/while'], 'goto': self.check_list['goto']}
 
 
     def walk(self, ast):
@@ -46,8 +78,8 @@ class Function(object):
                 self.walk(data)
             else:
                 # print '{} - {} : {}'.format(data.spelling, data.kind, data.location.line)
-                if not(data.spelling in self.variable_dict) and data.kind is CursorKind.VAR_DECL:
-                    self.variable_dict[data.spelling] = {'declare': data.location.line, 'first': 0, 'last': 0}
+                if not(data.spelling in self.variable) and data.kind is CursorKind.VAR_DECL:
+                    self.variable[data.spelling] = {'declare': data.location.line, 'first': 0, 'last': 0}
 
                 elif data.kind is CursorKind.FUNCTION_DECL:
                     func = Function(ast[i + 1])
@@ -57,14 +89,19 @@ class Function(object):
                     pass
 
                 elif data.kind is CursorKind.DO_STMT:
-                    pass
+                    self.check_list['do/while'].append(data.location.line)
 
                 elif data.kind is CursorKind.GOTO_STMT or data.kind is CursorKind.INDIRECT_GOTO_STMT:
-                    pass
+                    self.check_list['goto'].append(data.location.line)
 
-                elif data.spelling and data.spelling in self.variable_dict:
-                    self.variable_dict[data.spelling]['last'] = data.location.line
-                    if not self.variable_dict[data.spelling]['first']: self.variable_dict[data.spelling]['first'] = data.location.line
+                elif data.spelling:
+                    if (data.spelling in self.global_variable) and (self.function_name not in self.global_variable[data.spelling]):
+                        self.global_variable[data.spelling].append(data.spelling)
+
+                    elif data.spelling in self.variable:
+                        self.variable[data.spelling]['last'] = data.location.line
+                        if not self.variable[data.spelling]['first']:
+                            self.variable[data.spelling]['first'] = data.location.line
 
             i += 1
 

@@ -10,6 +10,9 @@ class Checker(object):
         self.path = path
         self.isDir = os.path.isdir(path)
         self.save_path = os.path.dirname(path)
+        self.global_variable = dict()   # 'variable name': [function list]
+
+        self.function_checker = Function()
 
 
     def check_code(self):
@@ -32,20 +35,27 @@ class Checker(object):
         i = 0
 
         while i < len(ast):
-            if type(ast[i]) is list:
-                self.walk(ast[i])
+            data = ast[i]
+            if type(data) is list:
+                self.walk(data)
             else:
-                if ast[i].kind is CursorKind.FUNCTION_DECL:
-                    func = Function(ast[i + 1])
-                    print func.check_function(), func.variable_dict
+                if data.kind is CursorKind.FUNCTION_DECL:
+                    i += 1
+                    self.function_checker.set_init_data(ast[i], data.spelling, self.global_variable)
+                    print self.function_checker.check_function()
 
-                elif ast[i].kind is CursorKind.IF_STMT:
+                elif data.kind is CursorKind.IF_STMT:
                     pass
 
-                elif ast[i].kind is CursorKind.DO_STMT:
+                elif data.kind is CursorKind.DO_STMT:
                     pass
 
-                elif ast[i].kind is CursorKind.GOTO_STMT or ast[i].kind is CursorKind.INDIRECT_GOTO_STMT:
+                elif data.kind is CursorKind.GOTO_STMT or data.kind is CursorKind.INDIRECT_GOTO_STMT:
                     pass
+
+                elif data.kind is CursorKind.VAR_DECL:
+                    self.global_variable['data.spelling'] = list()
+
+                    print(self.global_variable, data.kind, data.spelling)
 
             i += 1
