@@ -25,6 +25,7 @@ class Checker(object):
 
                 if ext == '.c' or ext == '.cpp' or ext == '.h':
                     ast = parser.parser(os.path.join(self.save_path, file), ext)
+                    # print(ast)
                     self.walk(ast)
 
                 # del parser

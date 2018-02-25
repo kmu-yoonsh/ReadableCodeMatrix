@@ -57,7 +57,7 @@ class Function(object):
         result = list()
 
         for key in self.variable:
-            if not self.variable[key]['first']:
+            if self.variable[key]['first'] == self.variable[key]['declare']:
                 result.append(self.variable[key]['declare'])
 
         return result
@@ -77,11 +77,12 @@ class Function(object):
             if type(data) is list:
                 self.walk(data)
             else:
-                # print '{} - {} : {}'.format(data.spelling, data.kind, data.location.line)
-                if not(data.spelling in self.variable) and data.kind is CursorKind.VAR_DECL:
-                    self.variable[data.spelling] = {'declare': data.location.line, 'first': 0, 'last': 0}
+                position_in_code = data.location.line
 
-                elif data.kind is CursorKind.FUNCTION_DECL:
+                if not(data.spelling in self.variable) and data.kind is CursorKind.VAR_DECL:
+                    self.variable[data.spelling] = {'declare': position_in_code, 'first': position_in_code, 'last': 0}
+
+                if data.kind is CursorKind.FUNCTION_DECL:
                     func = Function(ast[i + 1])
                     print func.check_function()
 
@@ -89,19 +90,19 @@ class Function(object):
                     pass
 
                 elif data.kind is CursorKind.DO_STMT:
-                    self.check_list['do/while'].append(data.location.line)
+                    self.check_list['do/while'].append(position_in_code)
 
                 elif data.kind is CursorKind.GOTO_STMT or data.kind is CursorKind.INDIRECT_GOTO_STMT:
-                    self.check_list['goto'].append(data.location.line)
+                    self.check_list['goto'].append(position_in_code)
 
                 elif data.spelling:
                     if (data.spelling in self.global_variable) and (self.function_name not in self.global_variable[data.spelling]):
-                        self.global_variable[data.spelling].append(data.spelling)
+                        self.global_variable[data.spelling].append(position_in_code)
 
                     elif data.spelling in self.variable:
-                        self.variable[data.spelling]['last'] = data.location.line
+                        self.variable[data.spelling]['last'] = position_in_code
                         if not self.variable[data.spelling]['first']:
-                            self.variable[data.spelling]['first'] = data.location.line
+                            self.variable[data.spelling]['first'] = position_in_code
 
             i += 1
 

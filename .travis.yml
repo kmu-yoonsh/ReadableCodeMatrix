@@ -18,3 +18,11 @@ before_script:
 script:
   - coverage run ...
   - coverage report -m
+
+notifications:
+  email:
+    recipients:
+      - dollking@kookmin.ac.kr
+      - yoonsh@kookmin.ac.kr
+    on_success: always
+    on_failure: always

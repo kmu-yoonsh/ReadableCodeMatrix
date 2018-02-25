@@ -15,12 +15,8 @@ class Parsing(object):
 
         with open(os.path.join(self.save_path, fileName), 'w') as fw:
             fp = open(file)
-            lines = fp.readlines()
-            for line in lines:
-                # if '#include' in line:
-                #     self.delete_line_count += 1
-                # else:
-                fw.write(line)
+            code = fp.read()
+            fw.write(code)
 
         return fileName
 
@@ -29,6 +25,7 @@ class Parsing(object):
         temp = list()
         for child in ast.get_children():
             if str(child.location.file).find(TEMP_FILE_NAME) != -1:
+                # temp.append("{}-{}".format(child.spelling, child.kind))
                 temp.append(child)
                 if len(list(child.get_children())) > 0:
                     temp.append(self._toList(child))
