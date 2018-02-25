@@ -4,25 +4,20 @@ python:
 
 sudo: required
 
-env:
-  - OS_TYPE=centos OS_VERSION=7
-
 before_script:
-  # Uncomment next line if your Django app needs a JS runtime:
-  - yum install -y epel-release
-  - yum install -y clang
-  - yum install -y llvm
+  - apt-get install -y clang
+  - apt-get install -y llvm
   - python -V                                   # Print out python version for debugging
   - pip install -r requirements.txt
+  - pip install coverage
 
 script:
-  - coverage run ...
-  - coverage report -m
+  - coverage run --source=src test.py test
+  - coveralls
 
 notifications:
   email:
     recipients:
       - dollking@kookmin.ac.kr
-      - yoonsh@kookmin.ac.kr
     on_success: always
     on_failure: always
