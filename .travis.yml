@@ -9,9 +9,12 @@ before_script:
   - sudo python -V                                   # Print out python version for debugging
   - sudo pip install -r requirements.txt
   - sudo pip install coverage
+  - pip install coveralls
 
 script:
-  - coverage run --source=src test.py test
+  - coverage run --source=src /tests/test.py
+
+after_success:
   - coveralls
 
 notifications:

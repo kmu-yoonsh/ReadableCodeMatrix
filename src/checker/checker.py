@@ -14,49 +14,43 @@ class Checker(object):
 
         self.function_checker = Function()
 
+        self.check_result = dict()  #   result by file
 
     def check_code(self):
-        file_list = os.listdir(self.path) if self.isDir else [self.path]
+        file_list = os.listdir(self.path) if self.isDir else [os.path.split(self.path)[-1]]
 
-        for file in file_list:
+        for _file in file_list:
             try:
-                parser = Parsing(self.save_path)
-                ext = os.path.splitext(file)[-1]
+                parser = Parsing(_file)
+                ext = os.path.splitext(_file)[-1]
 
                 if ext == '.c' or ext == '.cpp' or ext == '.h':
-                    ast = parser.parser(os.path.join(self.save_path, file), ext)
-                    # print(ast)
-                    self.walk(ast)
+                    self.check_result[_file] = dict()
+                    self.global_variable = dict()
 
-                # del parser
+                    ast = parser.parser(os.path.join(self.save_path, _file))
+
+                    self.walk(ast, _file)
+                    self.check_result[_file]['global'] = self.global_variable
+
             except Exception as e:
                 print e
+        print(self.check_result)
 
-    def walk(self, ast):
+    def walk(self, ast, file_name):
         i = 0
 
         while i < len(ast):
             data = ast[i]
             if type(data) is list:
-                self.walk(data)
+                self.walk(data, file_name)
             else:
                 if data.kind is CursorKind.FUNCTION_DECL:
                     i += 1
                     self.function_checker.set_init_data(ast[i], data.spelling, self.global_variable)
-                    print self.function_checker.check_function()
-
-                elif data.kind is CursorKind.IF_STMT:
-                    pass
-
-                elif data.kind is CursorKind.DO_STMT:
-                    pass
-
-                elif data.kind is CursorKind.GOTO_STMT or data.kind is CursorKind.INDIRECT_GOTO_STMT:
-                    pass
+                    self.check_result[file_name][data.spelling] = self.function_checker.check_function()
 
                 elif data.kind is CursorKind.VAR_DECL:
-                    self.global_variable['data.spelling'] = list()
-
-                    print(self.global_variable, data.kind, data.spelling)
+                    self.global_variable[data.spelling] = list()
 
             i += 1

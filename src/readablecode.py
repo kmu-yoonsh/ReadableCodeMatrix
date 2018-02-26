@@ -9,7 +9,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    print(args.filePath, args.text, args.excel)
     checker = Checker(args.filePath, args.text, args.excel)
     checker.check_code()
 
