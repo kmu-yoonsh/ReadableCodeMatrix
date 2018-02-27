@@ -10,6 +10,7 @@ before_script:
   - pip install -r requirements.txt
   - pip install coverage
   - pip install coveralls
+  - pip install -U .
 
 script:
   - coverage run --source=readablecode tests/test.py
