@@ -4,12 +4,13 @@ python:
 
 
 before_script:
-  - sudo apt-get install -y clang
-  - sudo apt-get install -y llvm
-  - sudo python -V                                   # Print out python version for debugging
-  - sudo pip install -r requirements.txt
-  - sudo pip install coverage
+  - apt-get install -y clang
+  - apt-get install -y llvm
+  - python -V                                   # Print out python version for debugging
+  - pip install -r requirements.txt
+  - pip install coverage
   - pip install coveralls
+  - ls
 
 script:
   - coverage run --source=src /tests/test.py
