@@ -1,5 +1,5 @@
 import unittest
-from src.checker import Checker
+from readablecode.checker import Checker
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
