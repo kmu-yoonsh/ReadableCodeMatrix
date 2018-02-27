@@ -10,10 +10,9 @@ before_script:
   - pip install -r requirements.txt
   - pip install coverage
   - pip install coveralls
-  - ls
 
 script:
-  - coverage run --source=src /tests/test.py
+  - coverage run --source=src tests/test.py
 
 after_success:
   - coveralls
