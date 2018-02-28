@@ -3,7 +3,7 @@ python:
   - "2.7"
 
 before_script:
-  - sudo apt-get install -y clang
+  - sudo apt-get install -y clang-3.4
   - sudo apt-get install -y llvm
   - clang --version
   - python -V                                   # Print out python version for debugging
