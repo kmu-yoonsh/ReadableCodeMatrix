@@ -5,10 +5,11 @@ from readablecode.checker import Checker
 class MyTestCase(unittest.TestCase):
     def test_basic_case(self):
         print(os.getcwd())
-        print(os.listdir('./'))
-        checker1 = Checker('tests/testData/test1.cpp', None, None)
-        checker2 = Checker('tests/testData/test2.cpp', None, None)
-        checker3 = Checker('tests/testData/test3.cpp', None, None)
+        print(os.listdir('./tests'))
+        print(os.listdir('./tests/testData'))
+        checker1 = Checker('./tests/testData/test1.cpp', None, None)
+        checker2 = Checker('./tests/testData/test2.cpp', None, None)
+        checker3 = Checker('./tests/testData/test3.cpp', None, None)
         checker1.check_code()
         checker2.check_code()
         checker3.check_code()
