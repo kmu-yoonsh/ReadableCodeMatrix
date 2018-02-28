@@ -1,14 +1,12 @@
+sudo: required
+dist: precise
+
 language: python
 python:
   - "2.7"
 
-compiler:
-  - clang-3.4
-  - gcc-4.8
-  - g++-4.8
-
 before_script:
-#  - sudo apt-get install -y clang-3.4
+  - sudo apt-get install -y clang
   - sudo apt-get install -y llvm
   - clang --version
   - python -V                                   # Print out python version for debugging
