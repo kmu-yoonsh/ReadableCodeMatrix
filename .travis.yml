@@ -2,14 +2,10 @@ language: python
 python:
   - "2.7"
 
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-4.8
-    - g++-4.8
-    - clang-3.4
+compiler:
+  - clang-3.4
+  - gcc-4.8
+  - g++-4.8
 
 before_script:
 #  - sudo apt-get install -y clang-3.4
