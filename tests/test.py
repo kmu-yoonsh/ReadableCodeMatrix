@@ -20,6 +20,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual('temp' in result2['unsuitable_naming']['numbering'], True)
         self.assertEqual('a' in result2['unsuitable_naming']['too_short'], True)
         self.assertEqual('b' in result2['unsuitable_naming']['too_short'], True)
+        self.assertEqual('v' in result2['unsuitable_naming']['too_short'], False)
         self.assertEqual(len(result2['unsuitable_naming']['too_short']), 4)
         self.assertEqual(len(result2['unused_variable']['variable']), 5)
 
