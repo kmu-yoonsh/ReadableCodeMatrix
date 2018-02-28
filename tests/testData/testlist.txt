@@ -1,4 +1,6 @@
-test1.cpp : check variable that used only one character.
+test1.cpp : test code to check that find list of functions.
+test2.cpp : test code to check that find unsuitable variable&parameter(numbering, too-short).
+test3.cpp : test code to check naming format.
 
 ...
 

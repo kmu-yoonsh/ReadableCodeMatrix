@@ -11,4 +11,5 @@ if __name__ == '__main__':
 
     checker = Checker(args.filePath, args.text, args.excel)
     checker.check_code()
+    print(checker.check_result)
 

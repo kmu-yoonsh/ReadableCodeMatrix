@@ -1,12 +1,13 @@
 #include <iostream>
 
+
 int main()
 {
-    int temp1, temp2, pos;
-    std::cin >> temp1 >> temp2 >> pos;
+    int temp1, temp2, temp3;
+    int a, b, c, d;
+    std::cin >> temp1 >> temp2;
 
-    if(temp1 == pos)
-        printf("OK\n");
+    temp3 = temp1 + temp2;
 
     return 0;
 }

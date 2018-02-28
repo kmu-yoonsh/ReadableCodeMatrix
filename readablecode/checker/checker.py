@@ -29,13 +29,12 @@ class Checker(object):
                     self.global_variable = dict()
 
                     ast = parser.parser(os.path.join(self.save_path, _file))
-
+                    # print(ast)
                     self.walk(ast, _file)
                     self.check_result[_file]['global'] = self.global_variable
 
             except Exception as e:
                 print e
-        print(self.check_result)
 
     def walk(self, ast, file_name):
         i = 0

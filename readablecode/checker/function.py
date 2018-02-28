@@ -5,8 +5,8 @@ from clang.cindex import CursorKind
 
 class Function(object):
     def __init__(self):
-        self.underscore = re.compile('[_a-z]+')
-        self.camelcase = re.compile('[a-z]+([A-Z][a-z]+)*')
+        self.underscore = re.compile('^[_a-z]+$')
+        self.camelcase = re.compile('^[a-z]+([A-Z][a-z]+)*$')
 
         self.line_count = 0
         self.nested_count = 0
@@ -41,31 +41,28 @@ class Function(object):
 
     # function for check variable
     def check_naming_rule(self):
-        result = list()
         variable_list = self.variable.keys() + self.parameter.keys()
 
+        # [result of underscore rule, result of camelcase rule] - True: pass, False: non-pass
         for variable in variable_list:
+            print(variable, self.underscore.match(variable))
             if self.underscore.match(variable) is None:
-                result.append(False)
                 break
         else:
-            result.append(True)
+            return [True, False]
 
         for variable in variable_list:
             if self.camelcase.match(variable) is None:
-                result.append(False)
-                break
+                return [False, False]
         else:
-            result.append(True)
-
-        return result   # [result of underscore rule, result of camelcase rule] - True: pass, False: non-pass
+            return [False, True]
 
 
     def check_unusing_variable(self):
         result = {'variable': list(), 'parameter': list()}
 
         for key in self.variable:
-            if self.variable[key]['first'] == self.variable[key]['declare']:
+            if self.variable[key]['first'] == self.variable[key]['last']:
                 result['variable'].append({key: self.variable[key]['declare']})
 
         for key in self.parameter:
@@ -78,7 +75,7 @@ class Function(object):
         result = {'too_short': list(), 'numbering': list()}
         variable_list = self.variable.keys() + self.parameter.keys()
 
-        pattern_rex = re.compile('[_a-z]+[0-9]+', re.I)
+        pattern_rex = re.compile('^[_a-z]+[0-9]+$', re.I)
 
         temp_numbering_count = dict()
         for variable in variable_list:
@@ -118,7 +115,7 @@ class Function(object):
                 position_in_code = data.location.line
 
                 if not(data.spelling in self.variable) and data.kind is CursorKind.VAR_DECL:
-                    self.variable[data.spelling] = {'declare': position_in_code, 'first': position_in_code, 'last': 0}
+                    self.variable[data.spelling] = {'declare': position_in_code, 'first': 0, 'last': 0}
 
                 elif data.kind is CursorKind.PARM_DECL:
                     self.parameter[data.spelling] = 0
@@ -143,16 +140,14 @@ class Function(object):
                     if (data.spelling in self.global_variable) and (self.function_name not in self.global_variable[data.spelling]):
                         self.global_variable[data.spelling].append(position_in_code)
 
-                    elif data.kind is CursorKind.DECL_REF_EXPR:
+                    elif data.kind is CursorKind.DECL_REF_EXPR or data.kind is CursorKind.UNEXPOSED_EXPR:
                         if data.spelling in self.variable:
                             self.variable[data.spelling]['last'] = position_in_code
+                            if not self.variable[data.spelling]['first']:
+                                self.variable[data.spelling]['first'] = position_in_code
+
                         elif data.spelling in self.parameter:
                             self.parameter[data.spelling] = position_in_code
-
-                    elif data.spelling in self.variable:
-                        self.variable[data.spelling]['last'] = position_in_code
-                        if not self.variable[data.spelling]['first']:
-                            self.variable[data.spelling]['first'] = position_in_code
 
             i += 1
 

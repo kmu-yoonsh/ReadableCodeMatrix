@@ -2,18 +2,17 @@ language: python
 python:
   - "2.7"
 
-
 before_script:
   - sudo apt-get install -y clang
   - sudo apt-get install -y llvm
   - python -V                                   # Print out python version for debugging
   - pip install -r requirements.txt
-  - pip install coverage
-  - pip install coveralls
+  - pip install pytest-cov==2.4.0
+  - pip install coveralls==1.1
   - pip install -U .
 
 script:
-  - coverage run --source=readablecode tests/test.py
+  - py.test --cov readablecode tests/test.py
 
 after_success:
   - coveralls
