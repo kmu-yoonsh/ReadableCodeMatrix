@@ -12,7 +12,8 @@ before_script:
   - pip install -U .
 
 script:
-  - py.test --cov readablecode tests/test.py
+  - coverage run --source=readablecode tests/test.py
+#  - py.test --cov readablecode tests/test.py
 
 after_success:
   - coveralls
