@@ -10,6 +10,7 @@ before_script:
   - pip install pytest-cov==2.4.0
   - pip install coveralls==1.1
   - pip install -U .
+  - ls -al
 
 script:
   - py.test --cov readablecode tests/test.py
