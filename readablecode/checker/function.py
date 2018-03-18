@@ -1,47 +1,30 @@
 import os
 import re
 from clang.cindex import CursorKind
+from .innerstmt import InnerStmt
 
 
 class Function(object):
-    def __init__(self):
+    def __init__(self, analysis_data):
         self.underscore = re.compile('^[_a-z]+$')
         self.camelcase = re.compile('^[a-z]+([A-Z][a-z]+)*$')
 
-        self.line_count = 0
-        self.nested_count = 0
-        self.maximum_nested_count = 0
-        self.check_list = {'do/while': list(), 'goto': list()}
-
-        self.variable = dict()    # element: 'value name': {'declare': declare line, 'first': first using line, 'last': last using line}
-        self.parameter = dict()
-
-        self.used_function = list()
+        self.analysis_data = analysis_data
 
         self.root = None
-        self.global_variable = None
         self.function_name = None
+        self.inner_stmt = None
 
 
-    def set_init_data(self, root, function_name, global_variable):
+    def set_init_data(self, root, function_name):
         self.root = root
-        self.global_variable = global_variable
         self.function_name = function_name
-
-        self.line_count = 0
-        self.nested_count = 0
-        self.maximum_nested_count = 0
-        self.check_list = {'do/while': list(), 'goto': list()}
-
-        self.variable = dict()
-        self.parameter = dict()
-
-        self.used_function = list()
+        self.inner_stmt = InnerStmt(self.analysis_data)
 
 
     # function for check variable
     def check_naming_rule(self):
-        variable_list = self.variable.keys() + self.parameter.keys()
+        variable_list = self.analysis_data.variable.keys() + self.analysis_data.parameter.keys()
 
         # [result of underscore rule, result of camelcase rule] - True: pass, False: non-pass
         for variable in variable_list:
@@ -61,19 +44,19 @@ class Function(object):
     def check_unusing_variable(self):
         result = {'variable': list(), 'parameter': list()}
 
-        for key in self.variable:
-            if self.variable[key]['first'] == self.variable[key]['last']:
-                result['variable'].append({key: self.variable[key]['declare']})
+        for key in self.analysis_data.variable:
+            if self.analysis_data.variable[key]['first'] == self.analysis_data.variable[key]['last']:
+                result['variable'].append({key: self.analysis_data.variable[key]['declare']})
 
-        for key in self.parameter:
-            if self.parameter[key] is 0:
+        for key in self.analysis_data.parameter:
+            if self.analysis_data.parameter[key] is 0:
                 result['parameter'].append(key)
 
         return result
 
     def check_unsuitable_naming(self):
         result = {'too_short': list(), 'numbering': list()}
-        variable_list = self.variable.keys() + self.parameter.keys()
+        variable_list = self.analysis_data.variable.keys() + self.analysis_data.parameter.keys()
 
         pattern_rex = re.compile('^[_a-z]+[0-9]+$', re.I)
 
@@ -99,10 +82,10 @@ class Function(object):
     def check_function(self):
         self.walk(self.root)
 
-        return {'variable': self.variable, 'naming_rule': self.check_naming_rule(),
+        return {'variable': self.analysis_data.variable, 'naming_rule': self.check_naming_rule(),
                 'unsuitable_naming': self.check_unsuitable_naming(), 'unused_variable': self.check_unusing_variable(),
-                'nested_count': self.maximum_nested_count, 'do/while': self.check_list['do/while'],
-                'goto': self.check_list['goto'], 'used_function': self.used_function}
+                'nested_count': self.analysis_data.nested_cnt_max, 'do/while': self.analysis_data.check_list['do/while'],
+                'goto': self.analysis_data.check_list['goto'], 'used_function': self.analysis_data.used_function}
 
 
     def walk(self, ast):
@@ -114,40 +97,47 @@ class Function(object):
             else:
                 position_in_code = data.location.line
 
-                if not(data.spelling in self.variable) and data.kind is CursorKind.VAR_DECL:
-                    self.variable[data.spelling] = {'declare': position_in_code, 'first': 0, 'last': 0}
+                if data.kind is CursorKind.VAR_DECL:
+                    if data.spelling in self.analysis_data.variable:
+                        self.analysis_data.duplicated_variable.append([data.spelling, position_in_code])
+                    else:
+                        self.analysis_data.variable[data.spelling] = {'declare': position_in_code, 'first': 0, 'last': 0}
+
 
                 elif data.kind is CursorKind.PARM_DECL:
-                    self.parameter[data.spelling] = 0
+                    self.analysis_data.parameter[data.spelling] = 0
 
                 elif data.kind is CursorKind.FUNCTION_DECL:
                     func = Function(ast[i + 1])
                     func.check_function()
 
-                elif data.kind is CursorKind.IF_STMT:
-                    pass
-
-                elif data.kind is CursorKind.DO_STMT:
-                    self.check_list['do/while'].append(position_in_code)
-
                 elif data.kind is CursorKind.GOTO_STMT or data.kind is CursorKind.INDIRECT_GOTO_STMT:
-                    self.check_list['goto'].append(position_in_code)
+                    self.analysis_data.check_list['goto'].append(position_in_code)
 
-                elif data.kind is CursorKind.CALL_EXPR and data.spelling not in self.used_function:
-                    self.used_function.append(data.spelling)
+                elif data.kind in self.analysis_data.conditional_list:
+                    if data.kind is CursorKind.DO_STMT:
+                        self.analysis_data.check_list['do/while'].append(position_in_code)
+
+                    self.inner_stmt.set_init_data(self.function_name)
+                    self.inner_stmt.walk([data, ast[i + 1]])
+                    i += 1
+
+                elif data.kind is CursorKind.CALL_EXPR and data.spelling not in self.analysis_data.used_function:
+                    self.analysis_data.used_function.append(data.spelling)
 
                 elif data.spelling:
-                    if (data.spelling in self.global_variable) and (self.function_name not in self.global_variable[data.spelling]):
-                        self.global_variable[data.spelling].append(position_in_code)
+                    if (data.spelling in self.analysis_data.global_variable) and \
+                            (self.function_name not in self.analysis_data.global_variable[data.spelling]):
+                        self.analysis_data.global_variable[data.spelling].append(self.function_name)
 
                     elif data.kind is CursorKind.DECL_REF_EXPR or data.kind is CursorKind.UNEXPOSED_EXPR:
-                        if data.spelling in self.variable:
-                            self.variable[data.spelling]['last'] = position_in_code
-                            if not self.variable[data.spelling]['first']:
-                                self.variable[data.spelling]['first'] = position_in_code
+                        if data.spelling in self.analysis_data.variable:
+                            self.analysis_data.variable[data.spelling]['last'] = position_in_code
+                            if not self.analysis_data.variable[data.spelling]['first']:
+                                self.analysis_data.variable[data.spelling]['first'] = position_in_code
 
-                        elif data.spelling in self.parameter:
-                            self.parameter[data.spelling] = position_in_code
+                        elif data.spelling in self.analysis_data.parameter:
+                            self.analysis_data.parameter[data.spelling] = position_in_code
 
             i += 1
 
