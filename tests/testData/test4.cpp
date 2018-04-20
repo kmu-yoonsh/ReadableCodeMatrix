@@ -1,9 +1,11 @@
 #include<iostream>
 
+int test_number = 1;
+
 int main()
 {
     int new_name, new_number, new_id;
-    int newName, newNumber, newId;
+    int test_number;
 
     return 0;
 }

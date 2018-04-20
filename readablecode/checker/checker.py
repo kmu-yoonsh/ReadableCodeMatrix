@@ -1,4 +1,6 @@
 import os
+import sys
+import traceback
 from .parsing import Parsing
 from .function import Function
 from .analysisdata import AnalysisData
@@ -28,11 +30,16 @@ class Checker(object):
 
                 if ext == '.c' or ext == '.cpp' or ext == '.h':
                     self.check_result[_file] = dict()
-
                     ast = parser.parser(os.path.join(self.save_path, _file))
+                    self.analysis_data.codes = open(os.path.join(self.save_path, _file)).readlines()
+
                     # print(ast)
-                    self.walk(ast, _file)
+                    try:
+                        self.walk(ast, _file)
+                    except Exception as e:
+                        print(e, traceback.extract_tb(sys.exc_info()[-1]))
                     self.check_result[_file]['global'] = self.analysis_data.global_variable
+                    # print(zself.analysis_data)
 
             except Exception as e:
                 print e

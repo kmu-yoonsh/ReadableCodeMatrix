@@ -28,7 +28,6 @@ class Function(object):
 
         # [result of underscore rule, result of camelcase rule] - True: pass, False: non-pass
         for variable in variable_list:
-            print(variable, self.underscore.match(variable))
             if self.underscore.match(variable) is None:
                 break
         else:
@@ -45,7 +44,7 @@ class Function(object):
         result = {'variable': list(), 'parameter': list()}
 
         for key in self.analysis_data.variable:
-            if self.analysis_data.variable[key]['first'] == self.analysis_data.variable[key]['last']:
+            if not self.analysis_data.variable[key]['last']:
                 result['variable'].append({key: self.analysis_data.variable[key]['declare']})
 
         for key in self.analysis_data.parameter:
@@ -84,6 +83,8 @@ class Function(object):
 
         return {'variable': self.analysis_data.variable, 'naming_rule': self.check_naming_rule(),
                 'unsuitable_naming': self.check_unsuitable_naming(), 'unused_variable': self.check_unusing_variable(),
+                'duplicate_variable': self.analysis_data.duplicated_variable, 'condition_order': self.analysis_data.condition_order,
+                'condition_combine': self.analysis_data.condition_combine, 'ternary_opt': self.analysis_data.ternary_operator,
                 'nested_count': self.analysis_data.nested_cnt_max, 'do/while': self.analysis_data.check_list['do/while'],
                 'goto': self.analysis_data.check_list['goto'], 'used_function': self.analysis_data.used_function}
 
@@ -95,14 +96,14 @@ class Function(object):
             if type(data) is list:
                 self.walk(data)
             else:
-                position_in_code = data.location.line
-
-                if data.kind is CursorKind.VAR_DECL:
-                    if data.spelling in self.analysis_data.variable:
-                        self.analysis_data.duplicated_variable.append([data.spelling, position_in_code])
+                if data.kind is CursorKind.VAR_DECL:# and data.kind.is_declaration():
+                    if data.spelling in self.analysis_data.variable or data.spelling in self.analysis_data.global_variable:
+                        if data.spelling not in self.analysis_data.duplicated_variable:
+                            self.analysis_data.duplicated_variable[data.spelling] = list()
+                        self.analysis_data.duplicated_variable[data.spelling].append(data.location.line)
                     else:
-                        self.analysis_data.variable[data.spelling] = {'declare': position_in_code, 'first': 0, 'last': 0}
-
+                        self.analysis_data.variable[data.spelling] = {'declare': data.location.line, 'last': 0}
+                        self.analysis_data.variable[data.spelling]['assign'] = data.location.line if len(ast) is 2 else 0
 
                 elif data.kind is CursorKind.PARM_DECL:
                     self.analysis_data.parameter[data.spelling] = 0
@@ -112,11 +113,11 @@ class Function(object):
                     func.check_function()
 
                 elif data.kind is CursorKind.GOTO_STMT or data.kind is CursorKind.INDIRECT_GOTO_STMT:
-                    self.analysis_data.check_list['goto'].append(position_in_code)
+                    self.analysis_data.check_list['goto'].append(data.location.line)
 
                 elif data.kind in self.analysis_data.conditional_list:
                     if data.kind is CursorKind.DO_STMT:
-                        self.analysis_data.check_list['do/while'].append(position_in_code)
+                        self.analysis_data.check_list['do/while'].append(data.location.line)
 
                     self.inner_stmt.set_init_data(self.function_name)
                     self.inner_stmt.walk([data, ast[i + 1]])
@@ -126,18 +127,20 @@ class Function(object):
                     self.analysis_data.used_function.append(data.spelling)
 
                 elif data.spelling:
+                    print(data.kind, data.spelling)
                     if (data.spelling in self.analysis_data.global_variable) and \
                             (self.function_name not in self.analysis_data.global_variable[data.spelling]):
                         self.analysis_data.global_variable[data.spelling].append(self.function_name)
 
-                    elif data.kind is CursorKind.DECL_REF_EXPR or data.kind is CursorKind.UNEXPOSED_EXPR:
+                    elif data.kind is CursorKind.DECL_REF_EXPR:# or data.kind is CursorKind.UNEXPOSED_EXPR:
                         if data.spelling in self.analysis_data.variable:
-                            self.analysis_data.variable[data.spelling]['last'] = position_in_code
-                            if not self.analysis_data.variable[data.spelling]['first']:
-                                self.analysis_data.variable[data.spelling]['first'] = position_in_code
+                            if self.analysis_data.variable[data.spelling]['assign']:
+                                self.analysis_data.variable[data.spelling]['last'] = data.location.line
+                            else:
+                                self.analysis_data.variable[data.spelling]['assign'] = data.location.line
 
                         elif data.spelling in self.analysis_data.parameter:
-                            self.analysis_data.parameter[data.spelling] = position_in_code
+                            self.analysis_data.parameter[data.spelling] = data.location.line
 
             i += 1
 

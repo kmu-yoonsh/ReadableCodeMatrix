@@ -1,7 +1,10 @@
-test1.cpp : test code to check that find list of functions.
-test2.cpp : test code to check that find unsuitable variable&parameter(numbering, too-short).
-test3.cpp : test code to check naming format.
-
+test1.cpp : finding list of functions.
+test2.cpp : finding unsuitable variable&parameter(numbering, too-short).
+test3.cpp : naming format.
+test4.cpp : finding global variable & duplicate variable.
+test5.cpp : check if ternary operator is available.
+test6.cpp : check if can combine the two conditions.
+test7.cpp : check order of arguments in conditionals.
 ...
 
 ...

@@ -1,8 +1,10 @@
 #include <iostream>
 
+using namespace std;
+
 void print()
 {
-    printf("hello world!");
+    cout << "hello world!" << endl;;
 }
 
 int main()
