@@ -59,18 +59,18 @@ class AnalysisData(object):
         # bit_opt = '[&~<<!|>>]'
         # comparison_opt = '(<>!)(=){0,2}'
 
-        temp_code = self.codes[line - 1][column - 1:].replace(' ', '')
+        temp_code = self.codes[line - 1][column - 1:].replace(' ', '').strip()
         opts = re.findall(etc_opt, temp_code)[0]
 
         if opts:
             if re.search(assign_opt, opts[0]):
-                return [opts[0], 1]
+                return [1, opts[0]] + temp_code.split(opts[0], 1)
             elif re.search(arithmetic_opt, opts[0]):
-                return [opts[0], 2]
+                return [2, opts[0]] + temp_code.split(opts[0], 1)
             else:
-                return [opts[0], 3]
+                return [3, opts[0]] + temp_code.split(opts[0], 1)
 
-        return [None, None]
+        return [None, None, None, None]
 
 
     def __str__(self):

@@ -127,7 +127,6 @@ class Function(object):
                     self.analysis_data.used_function.append(data.spelling)
 
                 elif data.spelling:
-                    print(data.kind, data.spelling)
                     if (data.spelling in self.analysis_data.global_variable) and \
                             (self.function_name not in self.analysis_data.global_variable[data.spelling]):
                         self.analysis_data.global_variable[data.spelling].append(self.function_name)

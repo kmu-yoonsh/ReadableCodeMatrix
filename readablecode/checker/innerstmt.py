@@ -70,8 +70,6 @@ class InnerStmt(object):
                 self.check_condition_order(data)
             else:
                 if data.kind is CursorKind.BINARY_OPERATOR:
-                    self.analysis_data.get_binary_operator(data.location.line, data.location.column)
-                    pass
                     # if [data.kind, ast[i + 1]] in self.condition_list:
                     #     pass
                     # else:
@@ -79,7 +77,7 @@ class InnerStmt(object):
                     # if
                     if (isinstance(ast[i + 1][0], Cursor) and not (105 < ast[i + 1][0].kind.value < 111)) or \
                             (isinstance(ast[i + 1][1], Cursor) and (105 < ast[i + 1][1].kind.value < 111)):
-                        if self.analysis_data.get_binary_operator(data.location.line, data.location.column)[1] is 3:
+                        if self.analysis_data.get_binary_operator(data.location.line, data.location.column)[0] is 3:
                             self.analysis_data.condition_order.append(data.location.line)
             i += 1
 
