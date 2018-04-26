@@ -13,8 +13,7 @@ before_script:
   - pip install -r requirements.txt
   - pip install pytest-cov==2.4.0
   - pip install coveralls==1.1
-  - ls /usr/lib
-#  - ln -s /usr/lib/x86_64-unknown-linux/libclang.so.1 /usr/lib/x86_64-unknown-linux/libclang.so
+  - ln -s /usr/lib/x86_64-linux-gnu/libclang.so.1 /usr/lib/x86_64-linux-gnu/libclang.so
 
 script:
   - coverage run --source=readablecode tests/test.py
