@@ -39,7 +39,6 @@ class Checker(object):
                     except Exception as e:
                         print(e, traceback.extract_tb(sys.exc_info()[-1]))
                     self.check_result[_file]['global'] = self.analysis_data.global_variable
-                    # print(zself.analysis_data)
 
             except Exception as e:
                 print e

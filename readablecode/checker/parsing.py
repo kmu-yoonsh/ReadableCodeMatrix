@@ -12,7 +12,7 @@ class Parsing(object):
         temp = list()
         for child in ast.get_children():
             if str(child.location.file).find(self.file_name) != -1:
-                # temp.append('{}-{}-{}'.format(child.kind, child.spelling, child.kind.value))
+                # temp.append('{}-{}'.format(child.kind, child.spelling))
                 temp.append(child)
                 if len(list(child.get_children())) > 0:
                     temp.append(self._toList(child))
