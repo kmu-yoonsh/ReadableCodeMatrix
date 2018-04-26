@@ -13,9 +13,9 @@ before_script:
   - pip install pytest-cov==2.4.0
   - pip install coveralls==1.1
   - pip install -U .
-  - ls -al
 
 script:
+  - python setup.py install
   - coverage run --source=readablecode tests/test.py
 
 after_success:
