@@ -21,7 +21,7 @@ setup(
     description='This is code readable check Package',
     long_description=README,
     url='https://github.com/kmu-yoonsh/ReadableCodeMatrix',
-    author='황석진',
+    author='Hwang Sek-Jin',
     author_email='dollking@kookmin.ac.kr',
     classifiers=[
         'Intended Audience :: Developers, Educator',
