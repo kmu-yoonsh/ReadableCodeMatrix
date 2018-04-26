@@ -1,11 +1,10 @@
 import os
 import sys
 import unittest
+from readablecode.checker import Checker
 
 class MyTestCase(unittest.TestCase):
     def test_basic_case(self):
-        sys.path.insert(0, './')
-
         checker1 = Checker('./tests/testData/test1.cpp', None, None)
         checker2 = Checker('./tests/testData/test2.cpp', None, None)
         checker3 = Checker('./tests/testData/test3.cpp', None, None)
