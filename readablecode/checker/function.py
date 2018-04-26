@@ -53,6 +53,16 @@ class Function(object):
 
         return result
 
+    def check_const_variable(self):
+        temp_list = list()
+
+        for i in self.analysis_data.variable:
+            # print(i, self.analysis_data.reassign_variable)
+            if i not in self.analysis_data.reassign_variable:
+                temp_list.append(i)
+
+        return temp_list
+
     def check_unsuitable_naming(self):
         result = {'too_short': list(), 'numbering': list()}
         variable_list = self.analysis_data.variable.keys() + self.analysis_data.parameter.keys()
@@ -83,10 +93,11 @@ class Function(object):
 
         return {'variable': self.analysis_data.variable, 'naming_rule': self.check_naming_rule(),
                 'unsuitable_naming': self.check_unsuitable_naming(), 'unused_variable': self.check_unusing_variable(),
-                'duplicate_variable': self.analysis_data.duplicated_variable, 'condition_order': self.analysis_data.condition_order,
-                'condition_combine': self.analysis_data.condition_combine, 'ternary_opt': self.analysis_data.ternary_operator,
-                'nested_count': self.analysis_data.nested_cnt_max, 'do/while': self.analysis_data.check_list['do/while'],
-                'goto': self.analysis_data.check_list['goto'], 'used_function': self.analysis_data.used_function}
+                'const_variable': self.check_const_variable(), 'duplicate_variable': self.analysis_data.duplicated_variable,
+                'condition_order': self.analysis_data.condition_order, 'condition_combine': self.analysis_data.condition_combine,
+                'ternary_opt': self.analysis_data.ternary_operator, 'nested_count': self.analysis_data.nested_cnt_max,
+                'do/while': self.analysis_data.check_list['do/while'], 'goto': self.analysis_data.check_list['goto'],
+                'used_function': self.analysis_data.used_function}
 
 
     def walk(self, ast):
@@ -125,6 +136,14 @@ class Function(object):
 
                 elif data.kind is CursorKind.CALL_EXPR and data.spelling not in self.analysis_data.used_function:
                     self.analysis_data.used_function.append(data.spelling)
+
+                elif data.kind is CursorKind.COMPOUND_ASSIGNMENT_OPERATOR:
+                    self.analysis_data.reassign_variable.append(self.analysis_data.get_binary_operator(data.location.line,
+                                                                                                       data.location.column)[2])
+                elif data.kind is CursorKind.BINARY_OPERATOR:
+                    temp_data = self.analysis_data.get_binary_operator(data.location.line, data.location.column)
+                    if temp_data[0] is 1:
+                        self.analysis_data.reassign_variable.append(temp_data[2])
 
                 elif data.spelling:
                     if (data.spelling in self.analysis_data.global_variable) and \

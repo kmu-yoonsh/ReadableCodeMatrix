@@ -101,6 +101,14 @@ class InnerStmt(object):
                 elif data.kind is CursorKind.GOTO_STMT or data.kind is CursorKind.INDIRECT_GOTO_STMT:
                     self.analysis_data.check_list['goto'].append(data.location.line)
 
+                elif data.kind is CursorKind.COMPOUND_ASSIGNMENT_OPERATOR:
+                    self.analysis_data.reassign_variable.append(self.analysis_data.get_binary_operator(data.location.line,
+                                                                                                       data.location.column)[2])
+                elif data.kind is CursorKind.BINARY_OPERATOR:
+                    temp_data = self.analysis_data.get_binary_operator(data.location.line, data.location.column)
+                    if temp_data[0] is 1:
+                        self.analysis_data.reassign_variable.append(temp_data[2])
+
                 elif data.kind in self.analysis_data.conditional_list:
                     self.current_cnt += 1
                     self.analysis_data.inner_stmt.append([data.kind.name, data.location.line, self.current_cnt])

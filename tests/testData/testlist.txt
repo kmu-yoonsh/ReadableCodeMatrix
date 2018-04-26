@@ -5,6 +5,7 @@ test4.cpp : finding global variable & duplicate variable.
 test5.cpp : check if ternary operator is available.
 test6.cpp : check if can combine the two conditions.
 test7.cpp : check order of arguments in conditionals.
+test8.cpp : check variable that can change to 'const variable'.
 ...
 
 ...

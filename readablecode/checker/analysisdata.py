@@ -18,6 +18,7 @@ class AnalysisData(object):
         self.index_variable = list()  # element - [variable name, line]
         self.global_variable = dict()  # element = 'global variable name': [using function name]
         self.parameter = dict()  # element - 'variable name': 'using line'
+        self.reassign_variable = list() # element 'variable name'
 
         self.inner_stmt = list()  # element - [conditional statement, line, nested count]
         self.condition_order = list()  # element - line
@@ -40,6 +41,7 @@ class AnalysisData(object):
         self.duplicated_variable = dict()  # element - [line]
         self.index_variable = list()  # element - [variable name, line]
         self.parameter = dict()  # element - 'variable name': 'using line'
+        self.reassign_variable = list()  # element 'variable name'
 
         self.inner_stmt = list()  # element - [conditional statement, line, nested count]
         self.condition_order = list()  # element - line
@@ -53,7 +55,7 @@ class AnalysisData(object):
 
 
     def get_binary_operator(self, line, column):
-        assign_opt = '[!+-/*%]?='
+        assign_opt = '[+-/*%]?='
         arithmetic_opt = '[+-/*%^]'
         etc_opt = '[~!%^&*-+=|/<>]+'
         # bit_opt = '[&~<<!|>>]'
@@ -74,6 +76,6 @@ class AnalysisData(object):
 
 
     def __str__(self):
-        return 'variabale: {}, parameter: {}, used_function: {}, innerStmt: {}, duplicated_variable: {}, condition_order: {}, condition_combine: {}, ternary_opt: {}'.\
-            format(self.variable, self.parameter, self.used_function, self.inner_stmt, self.duplicated_variable,
-                   self.condition_order, self.condition_combine, self.ternary_operator)
+        return 'variabale: {}, parameter: {}, reassign_variabe: {}, used_function: {}, innerStmt: {}, duplicated_variable: {}, condition_order: {}, condition_combine: {}, ternary_opt: {}'.\
+            format(self.variable, self.parameter, self.reassign_variable, self.used_function, self.inner_stmt,
+                   self.duplicated_variable, self.condition_order, self.condition_combine, self.ternary_operator)
