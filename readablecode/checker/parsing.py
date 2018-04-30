@@ -1,6 +1,5 @@
 import os
 import clang.cindex
-from message import TEMP_FILE_NAME
 
 
 class Parsing(object):
