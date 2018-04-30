@@ -138,17 +138,25 @@ class Function(object):
                     self.analysis_data.used_function.append(data.spelling)
 
                 elif data.kind is CursorKind.COMPOUND_ASSIGNMENT_OPERATOR:
-                    self.analysis_data.reassign_variable.append(self.analysis_data.get_binary_operator(data.location.line,
-                                                                                                       data.location.column)[2])
+                    if data.spelling in self.analysis_data.variable:
+                        self.analysis_data.reassign_variable.append(
+                            self.analysis_data.get_binary_operator(data.location.line,data.location.column)[2]
+                        )
+                    elif data.spelling in self.analysis_data.global_variable:
+                        self.analysis_data.global_variable[data.spelling][self.function_name] = 1
+
                 elif data.kind is CursorKind.BINARY_OPERATOR:
                     temp_data = self.analysis_data.get_binary_operator(data.location.line, data.location.column)
                     if temp_data[0] is 1:
-                        self.analysis_data.reassign_variable.append(temp_data[2])
+                        if temp_data[2] in self.analysis_data.variable:
+                            self.analysis_data.reassign_variable.append(temp_data[2])
+                        elif temp_data[2] in self.analysis_data.global_variable:
+                            self.analysis_data.global_variable[temp_data[2]][self.function_name] = 1
 
                 elif data.spelling:
                     if (data.spelling in self.analysis_data.global_variable) and \
                             (self.function_name not in self.analysis_data.global_variable[data.spelling]):
-                        self.analysis_data.global_variable[data.spelling].append(self.function_name)
+                        self.analysis_data.global_variable[data.spelling][self.function_name] = 0
 
                     elif data.kind is CursorKind.DECL_REF_EXPR:# or data.kind is CursorKind.UNEXPOSED_EXPR:
                         if data.spelling in self.analysis_data.variable:
@@ -161,7 +169,3 @@ class Function(object):
                             self.analysis_data.parameter[data.spelling] = data.location.line
 
             i += 1
-
-
-
-# is_declaration, is_reference, is_expression, is_statement, is_attribute

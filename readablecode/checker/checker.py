@@ -36,12 +36,65 @@ class Checker(object):
                     # print(ast)
                     try:
                         self.walk(ast, _file)
+                        self.check_result[_file]['global'] = dict()
+                        self.check_global_variable(_file)
                     except Exception as e:
                         print(e, traceback.extract_tb(sys.exc_info()[-1]))
-                    self.check_result[_file]['global'] = self.analysis_data.global_variable
 
             except Exception as e:
                 print e
+
+    def check_function_relation(self, using_func_set_list, function_set, file_name):
+        for _ in range(3):
+            past_size = -1
+            while past_size != len(using_func_set_list):
+                past_size = len(using_func_set_list)
+
+                i = 1
+                while i < len(using_func_set_list):
+                    if using_func_set_list[0] & using_func_set_list[i]:
+                        using_func_set_list[0] = using_func_set_list[0] | using_func_set_list[i]
+                        using_func_set_list.pop(i)
+                    else:
+                        i += 1
+
+            if len(using_func_set_list) is 1:
+                break
+
+            i = 0
+            while i < len(function_set):
+                set_to_list = list(function_set)
+                for func in using_func_set_list:
+                    if set_to_list[i] in func:
+                        using_func_set_list.append(set([set_to_list[i]] + self.check_result[file_name][set_to_list[i]]['used_function']))
+                        function_set.remove(set_to_list[i])
+                        break
+                i += 1
+
+        else:
+            return False    # can not connect functions each other within twice.
+
+        return True
+
+    def check_global_variable(self, file_name):
+        for global_variable in self.analysis_data.global_variable:
+            function_set = set(filter(lambda x: x != 'global', [func for func in self.check_result[file_name]]))
+            using_func_set_list = list()
+            using_func_total_set = set(list())
+            using_type_check_num = 0
+
+            for func in self.analysis_data.global_variable[global_variable]:
+                using_type_check_num += self.analysis_data.global_variable[global_variable][func]
+                using_func_set_list.append(set([func] + self.check_result[file_name][func]['used_function']))
+                using_func_total_set = using_func_total_set | using_func_set_list[-1]
+                function_set.remove(func)
+
+            if using_type_check_num:    # assigned more than once in functions
+                # functions that are using global variable is called by other functions using global variable, within twice.
+                if self.check_function_relation(using_func_set_list, function_set, file_name):
+                    self.check_result[file_name]['global'][global_variable] = 'change to function parameter'
+            else:   # using as constant
+                self.check_result[file_name]['global'][global_variable] = 'change to constant'
 
     def walk(self, ast, file_name):
         i = 0
@@ -59,6 +112,6 @@ class Checker(object):
                     self.check_result[file_name][data.spelling] = self.function_checker.check_function()
 
                 elif data.kind is CursorKind.VAR_DECL:
-                    self.analysis_data.global_variable[data.spelling] = list()
+                    self.analysis_data.global_variable[data.spelling] = dict()
 
             i += 1

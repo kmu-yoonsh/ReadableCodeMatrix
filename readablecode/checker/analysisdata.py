@@ -16,7 +16,7 @@ class AnalysisData(object):
         self.declared_variable_name = dict()  # element - 'variable name' : ['declare line']
         self.duplicated_variable = dict()  # element - [line]
         self.index_variable = list()  # element - [variable name, line]
-        self.global_variable = dict()  # element = 'global variable name': [using function name]
+        self.global_variable = dict()  # element = 'global variable name': {'using function name': 'using type'} (using type - 0: normal, 1: assigned)
         self.parameter = dict()  # element - 'variable name': 'using line'
         self.reassign_variable = list() # element 'variable name'
 
