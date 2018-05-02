@@ -8,6 +8,7 @@ test7.cpp : check order of arguments in conditionals.
 test8.cpp : check variable that can change to 'const variable'.
 test9.cpp : check unsuitable global variable by type.
 test10.cpp : check suitable global variable by count of function call relation.
+test11.cpp : check comprehensive case.(maximum nested count, goto...)
 ...
 
 ...

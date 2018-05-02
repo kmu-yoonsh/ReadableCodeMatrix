@@ -118,6 +118,7 @@ class InnerStmt(object):
                 elif data.kind in self.analysis_data.conditional_list:
                     if 'else' not in self.analysis_data.codes[data.location.line - 1]:
                         self.current_cnt += 1
+
                     self.analysis_data.inner_stmt.append([data.kind.name, data.location.line, self.current_cnt])
 
                     if data.kind is CursorKind.DO_STMT:
@@ -125,7 +126,7 @@ class InnerStmt(object):
                         self.walk(ast[i + 1])
                         i += 1
 
-                    elif data.kind is CursorKind.IF_STMT or data.kind is CursorKind.WHILE_STMT:
+                    elif data.kind is CursorKind.IF_STMT or data.kind is CursorKind.WHILE_STMT or data.kind is CursorKind.FOR_STMT:
                         self.check_condition_order([ast[i + 1][0], ast[i + 1][1]])
                         if data.kind is CursorKind.IF_STMT:
                             self.check_if_condition(ast[i + 1])

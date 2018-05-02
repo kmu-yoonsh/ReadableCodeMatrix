@@ -17,6 +17,7 @@ class MyTestCase(unittest.TestCase):
         checker8 = Checker('./tests/testData/test8.cpp', None, None)
         checker9 = Checker('./tests/testData/test9.cpp', None, None)
         checker10 = Checker('./tests/testData/test10.cpp', None, None)
+        checker11 = Checker('./tests/testData/test11.cpp', None, None)
 
         checker1.check_code()
         checker2.check_code()
@@ -28,6 +29,7 @@ class MyTestCase(unittest.TestCase):
         checker8.check_code()
         checker9.check_code()
         checker10.check_code()
+        checker11.check_code()
         result1 = checker1.check_result['test1.cpp']
         result2 = checker2.check_result['test2.cpp']['main']
         result3 = checker3.check_result['test3.cpp']['main']
@@ -38,6 +40,7 @@ class MyTestCase(unittest.TestCase):
         result8 = checker8.check_result['test8.cpp']['main']
         result9 = checker9.check_result['test9.cpp']
         result10 = checker10.check_result['test10.cpp']
+        result11 = checker11.check_result['test11.cpp']['main']
 
         # test 1
         self.assertEqual('print' in result1, True)
@@ -93,6 +96,10 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(result10['c']['used_function'][0], 'd')
         self.assertEqual(result10['main']['used_function'][0], 'a')
         self.assertEqual(result10['global']['number'], 'change to constant')
+
+        # test 11
+        self.assertEqual(result6['nested_count'], 5)
+        self.assertEqual(result6['goto'][0], 45)
 
 
 if __name__ == '__main__':
