@@ -98,8 +98,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(result10['global']['number'], 'change to constant')
 
         # test 11
-        self.assertEqual(result6['nested_count'], 5)
-        self.assertEqual(result6['goto'][0], 34)
+        self.assertEqual(result11['nested_count'], 5)
+        self.assertEqual(result11['goto'][0], 34)
 
 
 if __name__ == '__main__':
