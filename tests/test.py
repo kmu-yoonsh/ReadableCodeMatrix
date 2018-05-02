@@ -99,7 +99,7 @@ class MyTestCase(unittest.TestCase):
 
         # test 11
         self.assertEqual(result6['nested_count'], 5)
-        self.assertEqual(result6['goto'][0], 45)
+        self.assertEqual(result6['goto'][0], 34)
 
 
 if __name__ == '__main__':
