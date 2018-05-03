@@ -11,7 +11,7 @@ class Parsing(object):
         temp = list()
         for child in ast.get_children():
             if str(child.location.file).find(self.file_name) != -1:
-                # temp.append('{}-{}--{}'.format(child.kind, child.kind.is_declaration(), child.spelling))
+                # temp.append('{}-{}--{}'.format(child.kind, child.kind.is_preprocessing(), child.spelling))
                 temp.append(child)
                 if len(list(child.get_children())) > 0:
                     temp.append(self._toList(child))
@@ -21,7 +21,7 @@ class Parsing(object):
     def parser(self, file_path):
         try:
             index = clang.cindex.Index.create()
-            tu = index.parse(file_path)
+            tu = index.parse(file_path, options=1)
             ast = tu.cursor
 
             return self._toList(ast)

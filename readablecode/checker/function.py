@@ -146,7 +146,7 @@ class Function(object):
                     elif data.spelling in self.analysis_data.global_variable:
                         self.analysis_data.global_variable[data.spelling][self.function_name] = 1
 
-                elif data.kind is CursorKind.BINARY_OPERATOR:
+                elif data.kind is CursorKind.BINARY_OPERATOR and data.kind not in self.analysis_data.macro_list:
                     temp_data = self.analysis_data.get_binary_operator(data.location.line, data.location.column)
                     if temp_data[0] is 1:
                         if temp_data[2] in self.analysis_data.variable:
