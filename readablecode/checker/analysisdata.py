@@ -57,7 +57,7 @@ class AnalysisData(object):
     def get_binary_operator(self, line, column):
         assign_opt = '[+-/*%]?='
         arithmetic_opt = '[+-/*%^]'
-        etc_opt = '[~!%^&*-+=|/<>]+'
+        etc_opt = '[-~!%^&*+=|/<>]+'
         # bit_opt = '[&~<<!|>>]'
         # comparison_opt = '(<>!)(=){0,2}'
 
