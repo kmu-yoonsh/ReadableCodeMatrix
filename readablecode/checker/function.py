@@ -102,6 +102,7 @@ class Function(object):
 
     def walk(self, ast):
         i = 0
+
         while i < len(ast):
             data = ast[i]
             if type(data) is list:

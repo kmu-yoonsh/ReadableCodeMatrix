@@ -104,7 +104,8 @@ class Checker(object):
             if type(data) is list:
                 self.walk(data, file_name)
             else:
-                if data.kind is CursorKind.FUNCTION_DECL:
+                if data.kind is CursorKind.FUNCTION_DECL and type(ast[i + 1]) is list \
+                        and filter(lambda x: x.kind is CursorKind.COMPOUND_STMT, filter(lambda y: type(y) is not list, ast[i + 1])):
                     i += 1
 
                     self.analysis_data.set_init_data()

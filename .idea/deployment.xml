@@ -5,7 +5,7 @@
       <paths name="readableCodeTest">
         <serverdata>
           <mappings>
-            <mapping deploy="/test" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/readableCode" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
