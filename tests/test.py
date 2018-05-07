@@ -40,7 +40,7 @@ class MyTestCase(unittest.TestCase):
         result8 = checker8.check_result['test8.cpp']['main']
         result9 = checker9.check_result['test9.cpp']
         result10 = checker10.check_result['test10.cpp']
-        result11 = checker11.check_result['test11.cpp']['main']
+        result11 = checker11.check_result['test11.cpp']
 
         # test 1
         self.assertEqual('print' in result1, True)
@@ -98,8 +98,10 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(result10['global']['number'], 'change to constant')
 
         # test 11
-        self.assertEqual(result11['nested_count'], 5)
-        self.assertEqual(result11['goto'][0], 34)
+        self.assertEqual(result11['main']['nested_count'], 5)
+        self.assertEqual(result11['main']['goto'][0], 34)
+        self.assertEqual(len(result11['global']), 4)
+        self.assertEqual(result11['global']['tri'], 'change to function parameter')
 
 
 if __name__ == '__main__':

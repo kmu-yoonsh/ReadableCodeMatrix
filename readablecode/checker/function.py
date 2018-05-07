@@ -57,8 +57,7 @@ class Function(object):
         temp_list = list()
 
         for i in self.analysis_data.variable:
-            # print(i, self.analysis_data.reassign_variable)
-            if i not in self.analysis_data.reassign_variable:
+            if i not in self.analysis_data.reassign_variable and i not in self.analysis_data.index_variable:
                 temp_list.append(i)
 
         return temp_list
@@ -71,7 +70,7 @@ class Function(object):
 
         temp_numbering_count = dict()
         for variable in variable_list:
-            if len(variable) < 3:
+            if len(variable) < 3 and variable not in self.analysis_data.index_variable:
                 result['too_short'].append(variable)
 
             if pattern_rex.match(variable):
@@ -87,9 +86,15 @@ class Function(object):
 
         return result
 
+    def remove_index_variable(self):
+        for i in self.analysis_data.index_variable:
+            if i in self.analysis_data.variable:
+                del self.analysis_data.variable[i]
 
     def check_function(self):
         self.walk(self.root)
+
+        self.remove_index_variable()
 
         return {'variable': self.analysis_data.variable, 'naming_rule': self.check_naming_rule(),
                 'unsuitable_naming': self.check_unsuitable_naming(), 'unused_variable': self.check_unusing_variable(),
@@ -135,13 +140,17 @@ class Function(object):
                     self.inner_stmt.walk([data, ast[i + 1]])
                     i += 1
 
-                elif data.kind is CursorKind.CALL_EXPR and data.spelling not in self.analysis_data.used_function:
-                    self.analysis_data.used_function.append(data.spelling)
+                elif data.kind is CursorKind.CALL_EXPR:
+                    if data.spelling in self.analysis_data.input_function_list:
+                        self.analysis_data.check_assign_with_function(ast[i + 1], self.function_name)
+                        i += 1
+                    elif data.spelling not in self.analysis_data.used_function:
+                        self.analysis_data.used_function.append(data.spelling)
 
                 elif data.kind is CursorKind.COMPOUND_ASSIGNMENT_OPERATOR:
                     if data.spelling in self.analysis_data.variable:
                         self.analysis_data.reassign_variable.append(
-                            self.analysis_data.get_binary_operator(data.location.line,data.location.column)[2]
+                            self.analysis_data.get_binary_operator(data.location.line, data.location.column)[2]
                         )
                     elif data.spelling in self.analysis_data.global_variable:
                         self.analysis_data.global_variable[data.spelling][self.function_name] = 1

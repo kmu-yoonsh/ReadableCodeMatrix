@@ -18,14 +18,20 @@ class InnerStmt(object):
         self.function_name = function_name
 
 
-    # def get_condition(self, ast):
-    #     i = 0
-    #     condition_list = list()
-    #     while i < len(ast):
-    #         data = ast[i]
-    #         if type(data) is list:
-    #             self.get_condition(data)
-    #         pass
+    def check_for_condition(self, ast):
+        i = 0
+
+        while i < len(ast):
+            data = ast[i]
+            if type(data) is list:
+                self.check_for_condition(data)
+            else:
+                if data.kind is CursorKind.VAR_DECL or data.kind is CursorKind.DECL_REF_EXPR:
+                    self.analysis_data.index_variable.append(data.spelling)
+                elif data.kind is CursorKind.COMPOUND_STMT:
+                    return
+
+            i += 1
 
 
     def check_if_condition(self, condition_stmt):
@@ -69,7 +75,7 @@ class InnerStmt(object):
             if type(data) is list:
                 self.check_condition_order(data)
             else:
-                if data.kind is CursorKind.BINARY_OPERATOR:
+                if data.kind is CursorKind.BINARY_OPERATOR and data.spelling not in self.analysis_data.macro_list:
                     if (isinstance(ast[i + 1][0], Cursor) and not (105 < ast[i + 1][0].kind.value < 111)) or \
                             (isinstance(ast[i + 1][1], Cursor) and (105 < ast[i + 1][1].kind.value < 111)):
                         if self.analysis_data.get_binary_operator(data.location.line, data.location.column)[0] is 3:
@@ -107,7 +113,7 @@ class InnerStmt(object):
                     elif data.spelling in self.analysis_data.global_variable:
                         self.analysis_data.global_variable[data.spelling][self.function_name] = 1
 
-                elif data.kind is CursorKind.BINARY_OPERATOR and data.kind not in self.analysis_data.macro_list:
+                elif data.kind is CursorKind.BINARY_OPERATOR and data.spelling not in self.analysis_data.macro_list:
                     temp_data = self.analysis_data.get_binary_operator(data.location.line, data.location.column)
                     if temp_data[0] is 1:
                         if temp_data[2] in self.analysis_data.variable:
@@ -128,7 +134,11 @@ class InnerStmt(object):
 
                     elif data.kind is CursorKind.IF_STMT or data.kind is CursorKind.WHILE_STMT or data.kind is CursorKind.FOR_STMT:
                         self.check_condition_order([ast[i + 1][0], ast[i + 1][1]])
-                        if data.kind is CursorKind.IF_STMT:
+
+                        if data.kind is CursorKind.FOR_STMT:
+                            self.check_for_condition(ast[i + 1])
+
+                        elif data.kind is CursorKind.IF_STMT:
                             self.check_if_condition(ast[i + 1])
 
                         self.walk(ast[i + 1])
@@ -137,8 +147,12 @@ class InnerStmt(object):
                     if 'else' not in self.analysis_data.codes[data.location.line - 1]:
                         self.current_cnt -= 1
 
-                elif data.kind is CursorKind.CALL_EXPR and data.spelling not in self.analysis_data.used_function:
-                    self.analysis_data.used_function.append(data.spelling)
+                elif data.kind is CursorKind.CALL_EXPR:
+                    if data.spelling in self.analysis_data.input_function_list:
+                        self.analysis_data.check_assign_with_function(ast[i + 1], self.function_name)
+                        i += 1
+                    elif data.spelling not in self.analysis_data.used_function:
+                        self.analysis_data.used_function.append(data.spelling)
 
                 elif data.spelling:
                     if (data.spelling in self.analysis_data.global_variable) and (

@@ -9,6 +9,7 @@ class AnalysisData(object):
     def __init__(self):
         self.codes = None
         self.conditional_list = [CursorKind.IF_STMT, CursorKind.FOR_STMT, CursorKind.WHILE_STMT, CursorKind.DO_STMT]
+        self.input_function_list = ['operator>>', 'scanf', 'fscanf', 'fgetc', 'fgets']
 
         self.check_list = {'do/while': list(), 'goto': list()}
 
@@ -57,25 +58,54 @@ class AnalysisData(object):
 
 
     def get_binary_operator(self, line, column):
-        assign_opt = '[+-/*%]?='
-        arithmetic_opt = '[+-/*%^]'
-        etc_opt = '[-~!%^&*+=|/<>]+'
+        assign_opt = '[\+\-\/\*\%]?\='
+        arithmetic_opt = '[\+\-\/\*\%\^]'
+        etc_opt = '[\-\~\!\%\^\&\*\+\=\|\/\<\>]+'
         # bit_opt = '[&~<<!|>>]'
         # comparison_opt = '(<>!)(=){0,2}'
 
         temp_code = self.codes[line - 1][column - 1:].replace(' ', '').strip()
-        opts = re.findall(etc_opt, temp_code)[0]
+        opts = re.findall(etc_opt, temp_code)
 
         if opts:
-            if re.search(assign_opt, opts[0]):
-                return [1, opts[0]] + temp_code.split(opts[0], 1)
+            if filter(lambda x: re.search(assign_opt, x), opts):
+                temp = filter(lambda x: re.search(assign_opt, x), opts)
+                left, right = temp_code.split(temp[0], 1)
+                left = left.split('[')[0] if '[' in left else left
+                return [1, opts[0]] + [left, right]
+
             elif re.search(arithmetic_opt, opts[0]):
                 return [2, opts[0]] + temp_code.split(opts[0], 1)
+
             else:
                 return [3, opts[0]] + temp_code.split(opts[0], 1)
 
         return [None, None, None, None]
 
+    def check_assign_with_function(self, ast, function_name):
+        i = 0
+
+        while i < len(ast):
+            data = ast[i]
+            if type(data) is list:
+                self.check_assign_with_function(data, function_name)
+            else:
+                if (data.spelling in self.global_variable) and \
+                        (self.function_name not in self.global_variable[data.spelling]):
+                    self.global_variable[data.spelling][function_name] = 1
+
+                elif data.kind is CursorKind.DECL_REF_EXPR:  # or data.kind is CursorKind.UNEXPOSED_EXPR:
+                    if data.spelling in self.variable:
+                        if self.variable[data.spelling]['assign']:
+                            self.reassign_variable.append(data.spelling)
+                            self.variable[data.spelling]['last'] = data.location.line
+                        else:
+                            self.variable[data.spelling]['assign'] = data.location.line
+
+                    elif data.spelling in self.parameter:
+                        self.parameter[data.spelling] = data.location.line
+
+            i += 1
 
     def __str__(self):
         return 'variabale: {}, parameter: {}, reassign_variabe: {}, used_function: {}, innerStmt: {}, duplicated_variable: {}, condition_order: {}, condition_combine: {}, ternary_opt: {}'.\

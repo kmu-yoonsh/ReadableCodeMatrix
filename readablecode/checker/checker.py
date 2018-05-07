@@ -104,7 +104,7 @@ class Checker(object):
             if type(data) is list:
                 self.walk(data, file_name)
             else:
-                if 'MACRO' in data.kind.name:
+                if data.kind is CursorKind.MACRO_DEFINITION:
                     self.analysis_data.macro_list.append(data.spelling)
 
                 elif data.kind is CursorKind.FUNCTION_DECL and type(ast[i + 1]) is list \
