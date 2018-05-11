@@ -88,8 +88,8 @@ class Function(object):
 
     def remove_index_variable(self):
         for i in self.analysis_data.index_variable:
-            if i in self.analysis_data.variable:
-                del self.analysis_data.variable[i]
+            if i in self.analysis_data.duplicated_variable:
+                del self.analysis_data.duplicated_variable[i]
 
     def check_function(self):
         self.walk(self.root)
