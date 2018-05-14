@@ -35,8 +35,8 @@ class Checker(object):
 
                     # print(ast)
                     try:
-                        self.walk(ast, _file)
                         self.check_result[_file]['global'] = dict()
+                        self.walk(ast, _file)
                         self.check_global_variable(_file)
                     except Exception as e:
                         print(e, traceback.extract_tb(sys.exc_info()[-1]))

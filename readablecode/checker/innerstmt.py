@@ -75,11 +75,18 @@ class InnerStmt(object):
             if type(data) is list:
                 self.check_condition_order(data)
             else:
-                if data.kind is CursorKind.BINARY_OPERATOR and data.spelling not in self.analysis_data.macro_list:
-                    if (isinstance(ast[i + 1][0], Cursor) and not (105 < ast[i + 1][0].kind.value < 111)) or \
-                            (isinstance(ast[i + 1][1], Cursor) and (105 < ast[i + 1][1].kind.value < 111)):
-                        if self.analysis_data.get_binary_operator(data.location.line, data.location.column)[0] is 3:
-                            self.analysis_data.condition_order.append(data.location.line)
+                if data.kind is CursorKind.BINARY_OPERATOR and \
+                        self.analysis_data.get_binary_operator(data.location.line, data.location.column)[0] is 3: # and data.spelling not in self.analysis_data.macro_list:
+                    temp = ast[i + 1]
+                    if 105 < temp[0].kind.value < 111:
+                        temp = temp[1:]
+                    elif temp[0].kind is CursorKind.UNEXPOSED_EXPR and not temp[0].spelling:
+                        temp = temp[2:]
+                    else:
+                        return
+
+                    if not(105 < temp[0].kind.value < 111):
+                        self.analysis_data.condition_order.append(data.location.line)
             i += 1
 
 
@@ -113,7 +120,7 @@ class InnerStmt(object):
                     elif data.spelling in self.analysis_data.global_variable:
                         self.analysis_data.global_variable[data.spelling][self.function_name] = 1
 
-                elif data.kind is CursorKind.BINARY_OPERATOR and data.spelling not in self.analysis_data.macro_list:
+                elif data.kind is CursorKind.BINARY_OPERATOR:   # and data.spelling not in self.analysis_data.macro_list:
                     temp_data = self.analysis_data.get_binary_operator(data.location.line, data.location.column)
                     if temp_data[0] is 1:
                         if temp_data[2] in self.analysis_data.variable:
