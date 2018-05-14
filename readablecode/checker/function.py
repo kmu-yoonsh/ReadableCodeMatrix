@@ -147,6 +147,14 @@ class Function(object):
                     elif data.spelling not in self.analysis_data.used_function:
                         self.analysis_data.used_function.append(data.spelling)
 
+                elif data.kind is CursorKind.UNARY_OPERATOR:
+                    opts = self.analysis_data.get_binary_operator(data.location.line, data.location.column)
+                    if opts[1] == '++' or opts[1] == '--':
+                        if opts[2].strip('()') in self.analysis_data.variable:
+                            self.analysis_data.reassign_variable.append(opts[2].strip('()'))
+                        elif opts[3].strip('()') in self.analysis_data.variable:
+                            self.analysis_data.reassign_variable.append(opts[3].strip('()'))
+
                 elif data.kind is CursorKind.COMPOUND_ASSIGNMENT_OPERATOR:
                     if data.spelling in self.analysis_data.variable:
                         self.analysis_data.reassign_variable.append(
