@@ -95,9 +95,9 @@ class AnalysisData(object):
                     self.global_variable[data.spelling][function_name] = 1
 
                 elif data.kind is CursorKind.DECL_REF_EXPR:  # or data.kind is CursorKind.UNEXPOSED_EXPR:
+                    self.reassign_variable.append(data.spelling)
                     if data.spelling in self.variable:
                         if self.variable[data.spelling]['assign']:
-                            self.reassign_variable.append(data.spelling)
                             self.variable[data.spelling]['last'] = data.location.line
                         else:
                             self.variable[data.spelling]['assign'] = data.location.line
