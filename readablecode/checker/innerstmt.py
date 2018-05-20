@@ -70,7 +70,6 @@ class InnerStmt(object):
 
     def check_condition_order(self, ast):
         i = 0
-        print(ast[0].location.line)
         while i < len(ast):
             data = ast[i]
             if type(data) is list:
@@ -78,19 +77,15 @@ class InnerStmt(object):
             else:
                 if data.kind is CursorKind.BINARY_OPERATOR and \
                         self.analysis_data.get_binary_operator(data.location.line, data.location.column)[0] is 3: # and data.spelling not in self.analysis_data.macro_list:
-                    print(data.kind, self.analysis_data.get_binary_operator(data.location.line, data.location.column))
                     temp = ast[i + 1]
                     if 105 < temp[0].kind.value < 111:
-                        print(temp[0].kind.value)
                         temp = temp[1:]
                     elif (temp[0].kind is CursorKind.UNEXPOSED_EXPR) and not (len(temp[1]) - 1) and 105 < temp[1][0].kind.value < 111:
-                        print(temp[0].kind, temp[0].spelling, temp[1][0].kind, temp[2].spelling)
                         temp = temp[2:]
                     else:
                         return
 
                     if not(105 < temp[0].kind.value < 111):
-                        print(temp[0].kind.value, temp[0].spelling)
                         self.analysis_data.condition_order.append(data.location.line)
             i += 1
 
