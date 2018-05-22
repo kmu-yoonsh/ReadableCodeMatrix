@@ -49,11 +49,11 @@ class InnerStmt(object):
 
             # else statement check
             temp_stmt = condition_stmt[4:]  # remove conditional statement & if statement
-            if temp_stmt[0].kind is CursorKind.COMPOUND_STMT:
+            if isinstance(temp_stmt[0], Cursor) and temp_stmt[0].kind is CursorKind.COMPOUND_STMT:
                 if len(temp_stmt[1]) > 2:
                     return
                 temp_stmt = temp_stmt[1]
-            if temp_stmt[0].kind is CursorKind.BINARY_OPERATOR or temp_stmt[0].kind is CursorKind.COMPOUND_ASSIGNMENT_OPERATOR:
+            if isinstance(temp_stmt[0], Cursor) and (temp_stmt[0].kind is CursorKind.BINARY_OPERATOR or temp_stmt[0].kind is CursorKind.COMPOUND_ASSIGNMENT_OPERATOR):
                 if operation == temp_stmt[0].kind and target == temp_stmt[1][0].spelling:
                     self.analysis_data.ternary_operator.append(check_line)
             return
