@@ -41,7 +41,7 @@ class InnerStmt(object):
             # if statement check
             temp_stmt = condition_stmt[2:]  # remove conditional statement
             if temp_stmt[0].kind is CursorKind.COMPOUND_STMT:
-                if len(temp_stmt[1]) > 2:
+                if type(temp_stmt[1]) is not list or len(temp_stmt[1]) > 2:
                     return
                 temp_stmt = temp_stmt[1]
             if temp_stmt[0].kind is CursorKind.BINARY_OPERATOR or temp_stmt[0].kind is CursorKind.COMPOUND_ASSIGNMENT_OPERATOR:
