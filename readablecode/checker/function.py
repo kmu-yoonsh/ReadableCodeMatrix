@@ -57,7 +57,8 @@ class Function(object):
         temp_list = list()
 
         for i in self.analysis_data.variable:
-            if i not in self.analysis_data.reassign_variable and i not in self.analysis_data.index_variable:
+            if 'const' in self.analysis_data.variable[i] and i not in self.analysis_data.reassign_variable and \
+                    i not in self.analysis_data.index_variable:
                 temp_list.append(i)
 
         return temp_list
@@ -119,8 +120,14 @@ class Function(object):
                             self.analysis_data.duplicated_variable[data.spelling] = list()
                         self.analysis_data.duplicated_variable[data.spelling].append(data.location.line)
                     else:
-                        self.analysis_data.variable[data.spelling] = {'declare': data.location.line, 'last': 0}
-                        self.analysis_data.variable[data.spelling]['assign'] = data.location.line if len(ast) is 2 else 0
+                        self.analysis_data.variable[data.spelling] = {'declare': data.location.line, 'last': 0, 'assign': 0}
+                        if len(ast) is 2:
+                            self.analysis_data.variable[data.spelling]['assign'] = data.location.line
+                            if (type(ast[1]) is list) and \
+                                    ((105 < ast[1][0].kind.value < 111) or \
+                                    (ast[1][0].kind is CursorKind.UNEXPOSED_EXPR and
+                                     (105 < ast[1][1][0].kind.value < 111))):
+                                self.analysis_data.variable[data.spelling]['const'] = True
 
                 elif data.kind is CursorKind.PARM_DECL:
                     self.analysis_data.parameter[data.spelling] = 0

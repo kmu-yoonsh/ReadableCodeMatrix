@@ -103,8 +103,15 @@ class InnerStmt(object):
                             self.analysis_data.duplicated_variable[data.spelling] = list()
                         self.analysis_data.duplicated_variable[data.spelling].append(data.location.line)
                     else:
-                        self.analysis_data.variable[data.spelling] = {'declare': data.location.line, 'last': 0}
-                        self.analysis_data.variable[data.spelling]['assign'] = data.location.line if len(ast) is 2 else 0
+                        self.analysis_data.variable[data.spelling] = {'declare': data.location.line, 'last': 0,
+                                                                      'assign': 0}
+                        if len(ast) is 2:
+                            self.analysis_data.variable[data.spelling]['assign'] = data.location.line
+                            if (type(ast[1]) is list) and \
+                                    ((105 < ast[1][0].kind.value < 111) or \
+                                     (ast[1][0].kind is CursorKind.UNEXPOSED_EXPR and
+                                      (105 < ast[1][1][0].kind.value < 111))):
+                                self.analysis_data.variable[data.spelling]['const'] = True
 
                 elif data.kind is CursorKind.GOTO_STMT or data.kind is CursorKind.INDIRECT_GOTO_STMT:
                     self.analysis_data.check_list['goto'].append(data.location.line)
