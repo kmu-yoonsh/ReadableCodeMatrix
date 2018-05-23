@@ -147,7 +147,8 @@ class InnerStmt(object):
                         i += 1
 
                     elif data.kind is CursorKind.IF_STMT or data.kind is CursorKind.WHILE_STMT or data.kind is CursorKind.FOR_STMT:
-                        self.check_condition_order([ast[i + 1][0], ast[i + 1][1]])
+                        if ast[i+1][0].kind is not CursorKind.NULL_STMT:
+                            self.check_condition_order([ast[i + 1][0], ast[i + 1][1]])
 
                         if data.kind is CursorKind.FOR_STMT:
                             self.check_for_condition(ast[i + 1])
